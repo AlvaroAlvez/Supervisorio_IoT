@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>IoTito Configuration</title>
+
+    <style>
+        h1 {
+            font-family: sans-serif;
+            background-color: #1A2F3A;
+            font-style: oblique;
+            color: aliceblue;
+            text-align: center;
+        }
+
+        #logo {
+            max-width: 50px;
+        }
+
+        #button {
+            background-color: #1A2F3A;
+            border-radius: 4px;
+            color: aliceblue;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #button_logout {
+            background-color: #1A2F3A;
+            border-radius: 4px;
+            color: aliceblue;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #disconnect_button {
+            background-color: #1A2F3A;
+            border-radius: 4px;
+            color: aliceblue;
+            text-align: center;
+            cursor: pointer;
+        }
+
+
+
+        .container {
+            display: flex;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+
+        .container label {
+            flex: 1;
+            margin-right: auto;
+        }
+
+        .container input {
+            flex: 2;
+        }
+
+        .container select {
+            flex: 3;
+        }
+
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>System Configuration
+        <img src="/static/logo_pd7.png" id="logo" alt="Your Logo">
+    </h1>
+    <form method="POST" action="/configure" id="configForm">
+        <div class="container">
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" required><br><br>
+        </div>
+        <div class="container">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" required><br><br>
+        </div>
+        <div class="container">
+            <label for="ssid">WIFI SSID:</label>
+            <select name="ssid" id="ssid" required>
+                {% for wifi in wifi_networks %}
+                <option value="{{ wifi }}">{{ wifi }}</option>
+                {% endfor %}
+            </select><br><br>
+        </div>
+
+        <div class="center">
+            <label for="wifi_status">WiFi Status:</label>
+            {% if wifi_connected %}
+            <p id="wifi_status" style="color: green;">Connected</p>
+            <div class="center">
+                <button class="center" id="disconnect_button" type="button" onclick="disconnect_wifi()">Disconnect
+                    WiFi</button><br><br>
+            </div>
+            {% else %}
+            <p id="wifi_status" style="color: red;">Disconnected</p>
+            {% endif %}
+        </div>
+
+        <div class="container">
+            <label for="wifi_password">WiFi Password:</label>
+            <input type="password" name="wifi_password" id="wifi_password"><br><br>
+        </div>
+
+        <div class="container">
+            <label for="eth0_ip">eth0 IP adress:</label>
+            <input type="text" name="eth0_ip" id="eth0_ip" required><br><br>
+        </div>
+
+        <div class="container">
+            <label for="eth0_netmask">eth0 Netmask:</label>
+            <input type="text" name="eth0_netmask" id="eth0_netmask" required><br><br>
+        </div>
+
+        <div class="container">
+            <label for="eth0_gateway">eth0 Gateway:</label>
+            <input type="text" name="eth0_gateway" id="eth0_gateway" required><br><br>
+        </div>
+
+        <div class="container">
+            <label for="timezone">Timezone:</label>
+            <select name="timezone" id="timezone" required>
+                {% for timezone in timezone_html_list %}
+                <option value="{{ timezone }}">{{ timezone }}</option>
+                {% endfor %}
+            </select><br><br>
+        </div>
+
+        <div class="center">
+            <input type="submit" id="button" value="Save Configuration" onclick="saveConfig()"><br><br>
+        </div>
+
+        <div class="center">
+            <button type="button" id="button_logout" onclick="logout()">Logout</button>
+        </div>
+    </form>
+
+    <script>
+        function saveConfig() {
+            var form = document.forms["configForm"];
+            if (form.checkValidity()) {
+                form.submit();
+
+                form.addEventListener("submit", function (event) {
+                    event.preventDefault();
+                    fetch('/configure', { method: 'POST' })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log('Config is saved!')
+                            } else {
+                                console.log('Fail in saving!')
+                            }
+                        });
+                });
+            } else {
+                console.error('Fail in Form!');
+            }
+        }
+    </script>
+
+    <script>
+        function disconnect_wifi() {
+            fetch('/disconnect-wifi', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Disconnect Fail!');
+                    }
+                })
+        }     
+    </script>
+
+    <script>
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Logout failed');
+                    }
+                })
+        }
+    </script>
+</body>
+
+</html>
