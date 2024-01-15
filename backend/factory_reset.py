@@ -77,7 +77,7 @@ while True: # monitor the button for factoring reset
         
         #GPIO.output(23, GPIO.LOW)
 
-    
+    time.sleep(0.5) 
     #prev_button_state == current_button_state
 
 
