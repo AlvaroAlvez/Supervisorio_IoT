@@ -3,6 +3,9 @@ import sys
 sys.path.append('/home/babyiotito/scripts/services')
 from RaspResources import resources
 import threading #cria threads, que são fluxos separados de controle dentro do código, permitindo uma correta execução do programa 
+import time
+
+global teste
 
 #class Mqtt:
 class Mqtt_class():
@@ -45,18 +48,22 @@ class Mqtt_class():
     def get_Mqtt_payload(self):
         with self.payload_lock:#mesma situação que on_message, porém para acessar o return 
              return self.payload
-    
+        
+Mqtt_instance = Mqtt_class("mqtt.sobeai.com.br", 1883, "server raspi")
+Mqtt_instance.Mqtt_connect()
+
 def export_Mqtt_payload():
-    Mqtt_instance = Mqtt_class(broker_address, port, client_id)
-    Mqtt_instance.Mqtt_connect()
-    Mqtt_instance.publish_message(raspi_serial_nmbr, "raspi connected")
-    Mqtt_instance.on_subscribe(raspi_serial_nmbr, qos)
-    
+    last_payload = None
     while True:
+        global payload
         payload = Mqtt_instance.get_Mqtt_payload()
-        if payload is not None:
-            print(payload)
-            return payload
+        if payload is not None and payload != last_payload:
+            with open('/home/babyiotito/scripts/backend/payload.txt', 'w') as file:
+                file.write(payload)
+            print(payload) 
+            last_payload = payload
+            time.sleep(0.5)
+            #return payload
 
     
 if __name__ == "__main__":#padrão da linguagem, quando informo isso, quer dizer que o código abaixo só rodará se esse script estiver rodando
@@ -66,16 +73,21 @@ if __name__ == "__main__":#padrão da linguagem, quando informo isso, quer dizer
      raspi_instance = resources()
      raspi_serial_nmbr = raspi_instance.get_serial_nmbr()
 
-     broker_address = "mqtt.sobeai.com.br"
-     port = 1883
-     client_id = "server raspi"
-     qos = 0     
-     
+     #connect to m
+     qos = 0
+     Mqtt_instance.publish_message(raspi_serial_nmbr, "raspi connected")
+     Mqtt_instance.on_subscribe(raspi_serial_nmbr, qos)
+          
      export_Mqtt_payload()
+
+     #continuous_thread = threading.Thread(target=export_Mqtt_payload)
+     #continuous_thread.start()
+
+     time.sleep(0.5)
 
      try:
          while True:
-             
-             pass #loop infinito
+             time.sleep(0.5)
+             #pass #loop infinito
      except KeyboardInterrupt:
          print("Mqtt code server stopped")
