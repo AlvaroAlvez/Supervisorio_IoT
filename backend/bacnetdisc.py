@@ -1,33 +1,24 @@
 import BAC0
 import sys
-sys.path.append('/home/babyiotito/scripts/backend')
-from MqttProtocol import export_Mqtt_payload
-import time
+sys.path.append('/home/babyiotito/scripts/services')
+from RaspResources import resources
+
+#Getting IP address
+
+raspi_resources = resources()
+raspi_Eth0 = raspi_resources.get_eth0_ip()
+
+#connect to bacnet
+def bacnet_devices():
+    bacnet = BAC0.connect(f"{raspi_Eth0}/24")
+    devices = bacnet.whois()
+    return devices
 
 
-#mqtt payload
-teste1 = export_Mqtt_payload()
-
-if teste1 == 'bacnet':
-  print("works")
-else:
-  print("not worked")
-
-        
-try:
-   while True:
-
-        teste1 = export_Mqtt_payload()
-
-        if teste1 == 'bacnet':
-            print("works")
-        else:
-            print("not worked")
-                
-        time.sleep(0.5)
-                
 
 
-except KeyboardInterrupt:
-        print('bacnet discover sttoped ')
 
+
+
+
+    
