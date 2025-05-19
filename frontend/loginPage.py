@@ -11,3 +11,14 @@ with open('credentials.txt', 'r') as file:
 @app.route('/')
 def login_page():
     return render_template('loginPage.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    # ... verificação do login ...
+    return redirect(url_for('dashboard'))  # Redireciona para o dashboard
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')  # essa é a página com as bombas animadas
+
+

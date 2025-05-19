@@ -1,0 +1,142 @@
+/* Reset básico */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0faff; /* Azul claro de fundo */
+    color: #033e3e; /* Verde escuro para texto */
+}
+
+/* Logo */
+.logo-container {
+    text-align: center;
+}
+
+/* Cabeçalho padrão */
+h1, h2 {
+    color: #026670; /* Azul petróleo */
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Formulários */
+form {
+    background-color: white;
+    padding: 25px;
+    margin: 30px auto;
+    border-radius: 12px;
+    max-width: 500px;
+    box-shadow: 0 0 15px rgba(0, 102, 102, 0.2);
+}
+
+label {
+    font-weight: bold;
+    color: #026670;
+}
+
+input[type="text"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Botões */
+#button,
+button,
+input[type="submit"] {
+    background-color: #028090;
+    color: white;
+    padding: 12px 20px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#button:hover,
+button:hover,
+input[type="submit"]:hover {
+    background-color: #01a2a6;
+}
+
+/* Mensagens de erro */
+#error-message {
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Dashboard específico */
+.pump-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.pump {
+    text-align: center;
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(2, 136, 144, 0.2);
+}
+
+.status-on {
+    color: green;
+    font-weight: bold;
+}
+
+.status-off {
+    color: red;
+    font-weight: bold;
+}
+
+/* Cabeçalho com ícone */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #026670;
+    color: white;
+    padding: 16px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.title {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+}
+
+.settings-icon {
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+/* Botão de voltar */
+.back-button {
+    font-size: 24px;
+    text-decoration: none;
+    margin-left: 20px;
+    display: inline-block;
+    color:rgb(255, 255, 255);
+}
+
+/* Centralização */
+.center {
+    text-align: center;
+}
+
+/* Containers */
+.container {
+    margin-bottom: 20px;
+}

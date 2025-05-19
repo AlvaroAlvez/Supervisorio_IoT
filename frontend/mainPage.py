@@ -9,6 +9,8 @@ import RPi.GPIO as GPIO
 import sys
 sys.path.append('/home/babyiotito/scripts/services')
 import LedControl
+from functools import wraps
+from flask import make_response
 
 #GPIO.setmode(GPIO.BCM)
 #GPIO.setup(23, GPIO.OUT)
@@ -28,6 +30,16 @@ class User(UserMixin):
         self.id = user_id
         self.username = username
         self.password = password
+
+def nocache(view):
+    @wraps(view)
+    def no_cache(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    return no_cache
 
 def disconnect_wifi(connection_name):
     disconnect_cmd = f"sudo nmcli connection down '{connection_name}'"
@@ -91,14 +103,27 @@ def load_user(user_id):
       return check_credentials(user_id)
 
 
-@app.route('/')
+@app.route('/configuration')
 @login_required
+@nocache
 def config_form():
      wifi_networks = get_available_wifi_networks()
      wifi_connected = is_wifi_connected()
      timezone_html_list = get_timezone()
-     login_session = login()    
+     login_session = login()
      return render_template('mainPage.html', wifi_networks=wifi_networks, wifi_connected=wifi_connected, login_session=login_session, timezone_html_list=timezone_html_list)
+
+@app.route('/status')
+@login_required
+def status():
+    return render_template('status.html')  # Or whatever logic you want
+
+@app.route('/')
+@login_required
+@nocache
+def dashboard():
+    login_session = login()
+    return render_template('dashboard.html', login_session=login_session)
 
 
 @app.route('/disconnect-wifi', methods=['POST'])
@@ -176,7 +201,9 @@ def login():
            session['Logged_in'] = True
            flash('Login Successful!', 'success')
            login_user(user)
-           return redirect(url_for('config_form'))
+           return redirect(url_for('dashboard'))
+          # return redirect(url_for('config_form'))
+          
         else:
            print (user.username)
            print (user.password.encode())

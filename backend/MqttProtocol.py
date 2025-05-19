@@ -4,9 +4,11 @@ sys.path.append('/home/babyiotito/scripts/services')
 from RaspResources import resources
 #import threading #cria threads, que são fluxos separados de controle dentro do código, permitindo uma correta execução do programa 
 import time
+sys.path.append('/home/babyiotito/scripts/backend')
 
 payload = None
 last_payload = None
+Mqtt_message_received = False
 
 #class Mqtt:
 #class Mqtt_class():
@@ -44,11 +46,13 @@ def on_message(client, userdata, msg): #eu não preciso chamar essa função, no
 #       payload = msg.payload.decode()
         global payload
         global last_payload
+        global Mqtt_message_received
 
         message_received = f"{msg.topic}: {msg.payload.decode()}"
         payload = msg.payload.decode()
         print(message_received)
         print(payload)
+        Mqtt_message_received = True
 
         with open('/home/babyiotito/scripts/backend/payload.txt', 'r') as file:
                  last_payload=file.read()
@@ -56,7 +60,7 @@ def on_message(client, userdata, msg): #eu não preciso chamar essa função, no
         if payload != last_payload:
            with open('/home/babyiotito/scripts/backend/payload.txt', 'w') as file:
                  file.write(payload)
-           export_Mqtt_payload()
+
         
         
 def publish_message(client, topic, message):
@@ -70,14 +74,6 @@ def on_publish(client, userdata, result):
     #with self.payload_lock:#mesma situação que on_message, porém para acessar o return 
 #    return payload
         
-
-
-def export_Mqtt_payload():
-      with open('/home/babyiotito/scripts/backend/payload.txt', 'r') as file:
-           exported_payload=file.read()
-      print(exported_payload)
-      return exported_payload
-   
     
 if __name__ == "__main__":#padrão da linguagem, quando informo isso, quer dizer que o código abaixo só rodará se esse script estiver rodando
      #se chamarmos para um código externo, não rodará ai teríamos que por um else posterior
@@ -99,9 +95,9 @@ if __name__ == "__main__":#padrão da linguagem, quando informo isso, quer dizer
      client.publish(raspi_serial_nmbr, "raspi connected")
 
      client.loop_start()
-
+    
      try:
-         while True:
+         while True: 
              time.sleep(0.5)
              #pass #loop infinito
      except KeyboardInterrupt:

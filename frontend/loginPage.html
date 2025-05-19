@@ -2,59 +2,22 @@
 <html>
 <head>
     <title>Login - IoTito Cinfiguration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
- <style>
-        body {
-            font-family: sans-serif;
-            background-color: #1A2F3A;
-            color: aliceblue;
-            text-align: center;
-            padding: 50px;
-        }
-
-        h1 {
-            font-style: oblique;
-        }
-
-        #login-form {
-            display: inline-block;
-            background-color: #333;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        #button {
-            background-color: #1A2F3A;
-            border: none;
-            color: aliceblue;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        #error-message {
-            color: red;
-        }
-    </style>
-</head>
-
 <body>
-    <h1>Login
-       <img src="/static/logo_pd7.png" id="logo" alt="Your Logo"></h1>
-    <div id="login-form">
-        <form method="POST" action="/login">
-            <label for="username">Username:</label>
-            <input type="text" name="username" id="username" required><br><br>
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required><br><br>
-            <input type="submit" id="button" value="Login">
-        </form>
-        <p id="error-message">{{ error_message }}</p>
+    <div class="logo-container">
+        <img src="/static/logo_pd7tech.png" id="logo" alt="PD7Tech Logo"/>
+            <h1>Login</h1>
+        <div id="login-form">
+            <form method="POST" action="/login">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" required><br><br>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" required><br><br>
+                <input type="submit" id="button" value="Login">
+            </form>
+            <p id="error-message">{{ error_message }}</p>
+        </div>
     </div>
 </body>
-
 </html>
