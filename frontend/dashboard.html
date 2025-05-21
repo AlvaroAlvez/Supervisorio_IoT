@@ -36,30 +36,39 @@
 
     <!-- Script para alternar imagem e status -->
     <script>
-        const imgData = document.getElementById("imagePaths");
-        const gifPath = imgData.dataset.gif;
-        const imgPath = imgData.dataset.img;
+    const imgData = document.getElementById("imagePaths");
+    const gifPath = imgData.dataset.gif;
+    const imgPath = imgData.dataset.img;
 
-        let isRunning = true;
+    async function fetchPumpStatus() {
+        try {
+            const res = await fetch("/pump_status");
+            const data = await res.json();
+            const status = data.status;
 
-        function togglePump() {
             const img = document.getElementById("pumpImage");
-            const status = document.getElementById("pumpStatus");
+            const statusText = document.getElementById("pumpStatus");
 
-            if (isRunning) {
-                img.src = imgPath;
-                status.textContent = "Desligado";
-                status.classList.remove("status-on");
-                status.classList.add("status-off");
-            } else {
+            if (status == 1) {
                 img.src = gifPath;
-                status.textContent = "Ligado";
-                status.classList.remove("status-off");
-                status.classList.add("status-on");
+                statusText.textContent = "Ligado";
+                statusText.classList.remove("status-off");
+                statusText.classList.add("status-on");
+            } else {
+                img.src = imgPath;
+                statusText.textContent = "Desligado";
+                statusText.classList.remove("status-on");
+                statusText.classList.add("status-off");
             }
-
-            isRunning = !isRunning;
+        } catch (error) {
+            console.error("Erro ao buscar status da bomba:", error);
         }
-    </script>
+    }
+
+    // Atualiza a cada 1 segundo
+    setInterval(fetchPumpStatus, 1000);
+    // Atualiza imediatamente ao carregar
+    fetchPumpStatus();
+</script>
 </body>
 </html>

@@ -1,1 +1,1 @@
-raspi connected
+{"mac":"b8:27:eb:c1:0c:f8","ip":"192.168.43.236","act":"Prob_chuva","dev":"ARC","id":"00000000b1c10cf8","val":0}

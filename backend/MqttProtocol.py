@@ -5,100 +5,97 @@ from RaspResources import resources
 #import threading #cria threads, que são fluxos separados de controle dentro do código, permitindo uma correta execução do programa 
 import time
 sys.path.append('/home/babyiotito/scripts/backend')
+import json
 
 payload = None
 last_payload = None
 Mqtt_message_received = False
 
-#class Mqtt:
-#class Mqtt_class():
-    #class Mqtt_class(broker, port, client_id)
-    #o python entende os valores pela ordem colocada em __init__, logo broker entende
-    #que seu valor é broker_address, por causa da sua posição na hora  do constructor se trocassemos por port, (port, Broker_adress, ...) ele colocaria o valor de port em broker
-    #isso por conta da localização no código, o mesmo serve para parâmetros de função 
+def on_message(client, userdata, msg):
+    global payload
 
-#    def __init__(self, broker, port, client_id): #Encapsula as funcionalidades Mqtt server, o __init__ é o construtor da class e inicia vários atributos no "self"
-#        self.client = Mqtt.Client(client_id) #o atributo self é indispensável para apontar para o atributo dentro da class
-#        self.client.on_message = self.on_message
-#        self.client.on_publish = self.on_publish
-#        self.broker = broker
-#        self.port = port
-#        self.payload = None #inicia o payload com um valor nulo
-#        self.payload_lock = threading.Lock() #evita condições de corrida, onde duas ou mais threads tentam acessar a mesma variável
-                                             #cria um objeto Lock associado a classe, objetivo: garantir que uma thread por vez tente acessar a sessão crítica
+    payload = msg.payload.decode()
+    print(f"Received message on topic '{msg.topic}': {payload}")
 
-#def Mqtt_connect(broker, port, client):
-#    client = Mqtt.Client(client_id=client)
-#    client.connect(broker, port, client)
-#    client.loop_start()
+    try:
+        data = json.loads(payload)
+        device_id = data.get("id")
+        act = data.get("act")
+        val = data.get("val")
 
-#def on_publish(client,userdata,result): # função de callback, quando o paho publicar recebemos uma função de callback
-    #dizendo que a mensagem foi publicada
-#    print("data published \n")
-#    pass
+        if not device_id or not act:
+            print("Missing 'id' or 'act' in the message")
+            return
 
-#def on_subscribe(client, topic, qos):
-#    client.subscribe(topic, qos) 
+        # Path to file per device
+        file_path = f"/home/babyiotito/scripts/backend/devices/{device_id}.json"
 
-def on_message(client, userdata, msg): #eu não preciso chamar essa função, no paho lib, essa função é chamada automaticamente se chegar uma msg no tópico subscrito
-                                       #somente preciso subscrever o tópico e deixar a função declarada
-#    with payload_lock:#garante que apenas uma thread por vez tente acessar o que está no bloco, no caso self.payload
-#       payload = msg.payload.decode()
-        global payload
-        global last_payload
-        global Mqtt_message_received
+        # Load existing data if available
+        try:
+            with open(file_path, "r") as f:
+                device_data = json.load(f)
+        except FileNotFoundError:
+            device_data = {"id": device_id, "acts": {}}
 
-        message_received = f"{msg.topic}: {msg.payload.decode()}"
-        payload = msg.payload.decode()
-        print(message_received)
-        print(payload)
-        Mqtt_message_received = True
+        # Update the specific "act" with new value
+        device_data["acts"][act] = val
 
-        with open('/home/babyiotito/scripts/backend/payload.txt', 'r') as file:
-                 last_payload=file.read()
+        # Save back the updated JSON
+        with open(file_path, "w") as f:
+            json.dump(device_data, f, indent=2)
 
-        if payload != last_payload:
-           with open('/home/babyiotito/scripts/backend/payload.txt', 'w') as file:
-                 file.write(payload)
+        print(f"Updated device {device_id} - act '{act}': {val}")
 
-        
-        
+    except json.JSONDecodeError:
+        print("Invalid JSON received")
+
+def on_publish(client, userdata, result):
+    print("Data published successfully")
+
 def publish_message(client, topic, message):
     client.publish(topic, message)
 
-def on_publish(client, userdata, result):
-     print("data published \n")
-     pass
-    
-#def get_Mqtt_payload():
-    #with self.payload_lock:#mesma situação que on_message, porém para acessar o return 
-#    return payload
-        
-    
-if __name__ == "__main__":#padrão da linguagem, quando informo isso, quer dizer que o código abaixo só rodará se esse script estiver rodando
-     #se chamarmos para um código externo, não rodará ai teríamos que por um else posterior
-     
-     #GET MAC ADRESS FROM RASPI - sempre criar uma instancia antes de solicitar a function 
-     raspi_instance = resources()
-     raspi_serial_nmbr = raspi_instance.get_serial_nmbr()
+def on_connect(client, userdata, flags, rc):
+    print(f"Connected with result code {rc}")
+    client.subscribe(topic)
+    print(f"Subscribed to topic inside on_connect: {topic}")
 
-     #connect to mqqt
+if __name__ == "__main__":
 
-     broker = "mqtt.sobeai.com.br"
-     port = 1883
-     client = Mqtt.Client("raspi server")
-     client.connect(broker, port)
-     
-     client.on_message=on_message
-     client.on_publish=on_publish
-     client.subscribe(raspi_serial_nmbr, qos=0)
-     client.publish(raspi_serial_nmbr, "raspi connected")
+    # MQTT broker info
+    broker = "mqtt.sobeai.com.br"
+    port = 1883
+    topic = "store/kit/mqtt"
 
-     client.loop_start()
-    
-     try:
-         while True: 
-             time.sleep(0.5)
-             #pass #loop infinito
-     except KeyboardInterrupt:
-         print("Mqtt code server stopped")
+    # Get Raspberry Pi serial number (used as topic)
+    raspi_instance = resources()
+    raspi_serial_nmbr = raspi_instance.get_serial_nmbr()
+    print(f"Using MQTT topic:{topic}")
+
+    # Create MQTT client and connect
+    client = Mqtt.Client("raspi_server")
+    client.connect(broker, port)
+
+    # Attach callbacks
+    client.on_message = on_message
+    client.on_publish = on_publish
+    client.on_connect = on_connect
+
+    # Subscribe to the topic
+    client.subscribe(topic, qos=0)
+    print(f"Subscribed to topic: {topic}")
+
+    # Publish initial message
+    client.publish(raspi_serial_nmbr, "raspi connected")
+    print("Published connection message")
+
+    # Start MQTT client network loop
+    client.loop_start()
+
+    try:
+        while True:
+            time.sleep(0.5)  # main loop keeps script alive
+    except KeyboardInterrupt:
+        print("MQTT client stopped by user")
+        client.loop_stop()
+        client.disconnect()

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
 from flask_login import login_required, logout_user, login_user, current_user, UserMixin, LoginManager
 import bcrypt
 import subprocess
@@ -11,6 +11,7 @@ sys.path.append('/home/babyiotito/scripts/services')
 import LedControl
 from functools import wraps
 from flask import make_response
+import json
 
 #GPIO.setmode(GPIO.BCM)
 #GPIO.setup(23, GPIO.OUT)
@@ -223,6 +224,18 @@ def logout():
 def some_route():
      print(current_user)
      return "Check your code"
+
+@app.route('/pump_status')
+@login_required
+def pump_status():
+    try:
+        with open('/home/babyiotito/scripts/backend/devices/8940601.json') as f:
+            data = json.load(f)
+            status = data["acts"].get("Alarm_Inc", "0")
+            return jsonify({"status": int(status)})
+    except Exception as e:
+        print(f"Erro ao ler status da bomba: {e}")
+        return jsonify({"status": 0})
 
 def hash_password(password):
     salt = bcrypt.gensalt()
