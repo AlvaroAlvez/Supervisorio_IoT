@@ -6,10 +6,14 @@ from RaspResources import resources
 import time
 sys.path.append('/home/babyiotito/scripts/backend')
 import json
+import threading  
+
 
 payload = None
 last_payload = None
 Mqtt_message_received = False
+frontend_last_state = {}
+
 
 def on_message(client, userdata, msg):
     global payload
@@ -48,6 +52,35 @@ def on_message(client, userdata, msg):
 
     except json.JSONDecodeError:
         print("Invalid JSON received")
+
+
+def monitor_frontend_changes(client, device_id):
+    global frontend_last_state
+    frontend_path = f"/home/babyiotito/scripts/frontend/{device_id}.json"
+
+    while True:
+        try:
+            with open(frontend_path, "r") as f:
+                frontend_data = json.load(f)
+        except FileNotFoundError:
+            frontend_data = {"id": device_id, "acts": {}}
+
+        for act, val in frontend_data["acts"].items():
+            last_val = frontend_last_state.get(act)
+            if str(last_val) != str(val):
+                # Publish the command
+                publish_topic = f"store/kit/mqtt/{device_id}"
+                payload = json.dumps({
+                    "id": device_id,
+                    "act": act,
+                    "val": val
+                })
+                publish_message(client, publish_topic, payload)
+                print(f"[Frontend Monitor] Published change: {act} = {val}")
+                frontend_last_state[act] = val
+
+        time.sleep(0.5)  # Poll interval
+
 
 def on_publish(client, userdata, result):
     print("Data published successfully")
@@ -91,6 +124,11 @@ if __name__ == "__main__":
 
     # Start MQTT client network loop
     client.loop_start()
+
+    monitor_thread = threading.Thread(
+    target=monitor_frontend_changes, args=(client, raspi_serial_nmbr), daemon=True
+    )
+    monitor_thread.start()
 
     try:
         while True:
