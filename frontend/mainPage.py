@@ -4,7 +4,7 @@ import bcrypt
 import subprocess
 import re
 import os
-import time
+import datetime
 import RPi.GPIO as GPIO
 import sys
 sys.path.append('/home/babyiotito/scripts/services')
@@ -12,7 +12,7 @@ import LedControl
 from functools import wraps
 from flask import make_response
 import json
-
+from RaspResources import resources
 #GPIO.setmode(GPIO.BCM)
 #GPIO.setup(23, GPIO.OUT)
      
@@ -229,7 +229,7 @@ def some_route():
 @login_required
 def pump_status():
     try:
-        with open('/home/babyiotito/scripts/backend/devices/8940601.json') as f:
+        with open('/home/babyiotito/scripts/backend/devices/8940593.json') as f:
             data = json.load(f)
             status = data["acts"].get("Alarm_Inc", "0")
             return jsonify({"status": int(status)})
@@ -241,6 +241,44 @@ def hash_password(password):
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode(), salt)
     return hashed.decode('utf-8')
+
+@app.route('/bomba_action', methods=['POST'])
+def bomba_action():
+    data = request.get_json()
+    action = data.get('action')  # será o "act"
+    value = data.get('value')    # será o "val"
+
+    raspi_instance = resources()
+    serial = raspi_instance.get_serial_nmbr()
+
+    if not serial or not action:
+        return jsonify({"status": "error", "message": "Dados incompletos"}), 400
+
+    # Caminho para o arquivo JSON na pasta frontend
+    file_path = f"/home/babyiotito/scripts/frontend/{serial}.json"
+
+    try:
+        # Carregar dados existentes, se houver
+        try:
+            with open(file_path, "r") as f:
+                device_data = json.load(f)
+        except FileNotFoundError:
+            device_data = {"id": serial, "acts": {}}
+
+        # Atualizar valor da ação
+        device_data["acts"][action] = value
+
+        # Salvar o arquivo JSON atualizado
+        with open(file_path, "w") as f:
+            json.dump(device_data, f, indent=2)
+
+        print(f"Atualizado: {serial} - {action}: {value}")
+        return jsonify({"status": "ok", "message": "Comando registrado com sucesso"})
+
+    except Exception as e:
+        print(f"Erro ao atualizar JSON: {e}")
+        return jsonify({"status": "error", "message": "Falha ao atualizar JSON"}), 500
+
 
 def get_eth0_ip():
     # Read the existing /etc/network/interfaces file
@@ -260,8 +298,6 @@ def get_eth0_ip():
             break
 
     return eth0_ip
-
-
 
 if __name__ == '__main__':
   eth0_ip = get_eth0_ip()

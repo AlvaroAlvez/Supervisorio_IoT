@@ -22,19 +22,20 @@
     </div>
 
     <!-- Caminhos armazenados para acesso no JavaScript -->
-    <div id="imagePaths"
-         data-gif="{{ url_for('static', filename='pump1.gif') }}"
-         data-img="{{ url_for('static', filename='pump2.png') }}"></div>
-
     <div class="pump-container">
         <div class="pump">
             <h2>BOMBA 1</h2>
-            <img id="pumpImage" src="{{ url_for('static', filename='pump1.gif') }}" alt="Bomba 1" onclick="togglePump()">
+            <img id="pumpImage" src="{{ url_for('static', filename='pump1.gif') }}" alt="Bomba 1">
             <p>Status: <span id="pumpStatus" class="status-on">Ligado</span></p>
+            <button id="toggleButton" class="btn-on" onclick="togglePump()">Desligar</button>
         </div>
     </div>
 
-    <!-- Script para alternar imagem e status -->
+    <!-- Caminhos da imagem para o JavaScript -->
+     <div id="imagePaths" data-gif="{{ url_for('static', filename='pump1.gif') }}"
+               data-img="{{ url_for('static', filename='pump2.png') }}">
+     </div>
+
     <script>
     const imgData = document.getElementById("imagePaths");
     const gifPath = imgData.dataset.gif;
@@ -45,6 +46,8 @@
             const res = await fetch("/pump_status");
             const data = await res.json();
             const status = data.status;
+
+            console.log("Status recebido do backend:", status);
 
             const img = document.getElementById("pumpImage");
             const statusText = document.getElementById("pumpStatus");
@@ -65,10 +68,46 @@
         }
     }
 
-    // Atualiza a cada 1 segundo
+    // Atualiza a imagem/status do sensor real a cada segundo
     setInterval(fetchPumpStatus, 1000);
-    // Atualiza imediatamente ao carregar
     fetchPumpStatus();
+</script>
+
+<script>
+    let commandState = 0; // 0 = desligar, 1 = ligar
+
+    function togglePump() {
+        const button = document.getElementById("toggleButton");
+
+        // Alternar visual do botão
+        if (commandState === 0) {
+            button.textContent = "Desligar";
+            button.className = "btn-on";
+            commandState = 1;
+        } else {
+            button.textContent = "Ligar";
+            button.className = "btn-off";
+            commandState = 0;
+        }
+
+        // Enviar comando para backend (não altera imagem aqui!)
+        fetch('/bomba_action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: "bomba_1", value: commandState })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Falha no servidor");
+            return res.json();
+        })
+        .then(data => {
+            console.log(data.message);
+        })
+        .catch(err => {
+            alert("Erro ao enviar comando para a bomba.");
+            console.error(err);
+        });
+    }
 </script>
 </body>
 </html>

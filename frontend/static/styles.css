@@ -140,3 +140,33 @@ input[type="submit"]:hover {
 .container {
     margin-bottom: 20px;
 }
+
+.btn-on {
+    background-color: #28a745; /* verde */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-on:hover {
+    background-color: #218838;
+}
+
+.btn-off {
+    background-color: #dc3545; /* vermelho */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-off:hover {
+    background-color: #c82333;
+}

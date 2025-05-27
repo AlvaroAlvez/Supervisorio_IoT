@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
 from flask_login import login_required, logout_user, login_user, current_user, UserMixin, LoginManager
+import datetime
 import bcrypt
+import json
 import subprocess
 import re
 import os
@@ -31,6 +33,43 @@ def pump_status():
     except:
         return {"status": 0}
 
+@app.route('/bomba_action', methods=['POST'])
+def bomba_action():
+    data = request.get_json()
+    serial = data.get('serial')
+    action = data.get('action')
+    value = data.get('value')
+
+    # Dados com timestamp
+    record = {
+        "serial": serial,
+        "action": action,
+        "value": value,
+        "timestamp": datetime.now().isoformat()
+    }
+
+    # Caminho do arquivo onde os dados serão salvos
+    log_path = os.path.join("frontend", f"bomba_log_{serial}.json")
+
+    # Criar diretório logs se não existir
+    os.makedirs("frontend", exist_ok=True)
+
+    # Salvar ou adicionar ao arquivo JSON
+    if os.path.exists(log_path):
+        with open(log_path, "r+") as file:
+            try:
+                content = json.load(file)
+            except json.JSONDecodeError:
+                content = []
+            content.append(record)
+            file.seek(0)
+            json.dump(content, file, indent=4)
+    else:
+        with open(log_path, "w") as file:
+            json.dump([record], file, indent=4)
+
+    print(f"LOG salvo: {record}")
+    return jsonify({"status": "ok", "message": "Comando registrado com sucesso"})
 
 def get_eth0_ip():
     # Read the existing /etc/network/interfaces file
