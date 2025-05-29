@@ -67,6 +67,7 @@ def monitor_frontend_changes(client, device_id):
 
         for act, val in frontend_data["acts"].items():
             last_val = frontend_last_state.get(act)
+
             if str(last_val) != str(val):
                 # Publish the command
                 publish_topic = f"store/kit/mqtt/{device_id}"
@@ -75,6 +76,7 @@ def monitor_frontend_changes(client, device_id):
                     "act": act,
                     "val": val
                 })
+
                 publish_message(client, publish_topic, payload)
                 print(f"[Frontend Monitor] Published change: {act} = {val}")
                 frontend_last_state[act] = val
@@ -129,7 +131,7 @@ if __name__ == "__main__":
     target=monitor_frontend_changes, args=(client, raspi_serial_nmbr), daemon=True
     )
     monitor_thread.start()
-
+#testando
     try:
         while True:
             time.sleep(0.5)  # main loop keeps script alive
