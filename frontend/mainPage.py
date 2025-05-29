@@ -229,7 +229,7 @@ def some_route():
 @login_required
 def pump_status():
     try:
-        with open('/home/babyiotito/scripts/backend/devices/8940593.json') as f:
+        with open('/home/babyiotito/scripts/backend/devices/8940601.json') as f:
             data = json.load(f)
             status = data["acts"].get("Alarm_Inc", "0")
             return jsonify({"status": int(status)})
@@ -303,6 +303,6 @@ if __name__ == '__main__':
   eth0_ip = get_eth0_ip()
   if eth0_ip:
       LedControl.LED_Indicator()
-      app.run(debug=True, host=eth0_ip, port=8080)
+      app.run(debug=True, host='0.0.0.0', port=8080)
   else:
-      print("ERROR") 
+      print("ERROR")
