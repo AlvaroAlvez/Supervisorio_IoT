@@ -1,11 +1,11 @@
 {
   "id": "8940601",
   "acts": {
-    "Alarm_Inc": "0",
+    "Alarm_Inc": "1",
     "recon": "true",
     "input6": "0",
     "imalive": "true",
-    "dBmp": "20",
-    "sign": "-90"
+    "dBmp": "66",
+    "sign": "-67"
   }
 }
