@@ -1,0 +1,16 @@
+{
+    "checked_at": 1758552584,
+    "devices": [
+        {
+            "instance": 12346,
+            "ip": "192.168.20.101",
+            "status": "online"
+        },
+        {
+            "instance": 12345,
+            "ip": "192.168.20.145",
+            "status": "online"
+        }
+    ],
+    "raspi_serial": "0000000099af6397"
+}

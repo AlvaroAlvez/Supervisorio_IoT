@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify, send_file
 from flask_login import login_required, logout_user, login_user, current_user, UserMixin, LoginManager
 import bcrypt
 import subprocess
@@ -31,6 +31,26 @@ class User(UserMixin):
         self.id = user_id
         self.username = username
         self.password = password
+
+@app.route('/ping')
+def ping():
+    import subprocess
+
+    try:
+        # Tenta pingar o Google DNS com timeout de 2 segundos
+        result = subprocess.run(
+            ['ping', '-c', '1', '-W', '2', '8.8.8.8'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        if result.returncode == 0:
+            return jsonify({"status": "online"})
+        else:
+            return jsonify({"status": "offline"}), 503
+    except Exception as e:
+        print(f"Erro ao executar ping: {e}")
+        return jsonify({"status": "offline"}), 503
+
 
 def nocache(view):
     @wraps(view)
@@ -119,12 +139,49 @@ def config_form():
 def status():
     return render_template('status.html')  # Or whatever logic you want
 
+#@app.route('/')
+#@login_required
+#@nocache
+#def dashboard():
+    #login_session = login()
+    #return render_template('dashboard.html', login_session=login_session)
+
 @app.route('/')
 @login_required
 @nocache
-def dashboard():
+def dashboard2():
     login_session = login()
-    return render_template('dashboard.html', login_session=login_session)
+    return render_template('dashboard2.html', login_session=login_session)
+
+
+@app.route('/rescan', methods=['POST'])
+def proxy_rescan():
+    import requests
+    try:
+        res = requests.post("http://198.168.20.145:5000/rescan")  # chama backend
+        return res.json(), res.status_code
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# Proxy para get_ips
+@app.route('/get_ips', methods=['GET'])
+def proxy_get_ips():
+    try:
+        res = requests.get("http://192.168.20.145:5000/get_ips")  # chama backend
+        return res.json(), res.status_code
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
+
+@app.route('/services/static.json')
+def serve_static_json():
+    return send_file('/home/babyiotito/scripts/services/static.json', mimetype='application/json')
+
+
+@app.route('/services/current.json')
+def serve_current_json():
+    return send_file('/home/babyiotito/scripts/services/current.json', mimetype='application/json')
 
 
 @app.route('/disconnect-wifi', methods=['POST'])
@@ -202,7 +259,7 @@ def login():
            session['Logged_in'] = True
            flash('Login Successful!', 'success')
            login_user(user)
-           return redirect(url_for('dashboard'))
+           return redirect(url_for('dashboard2'))
           # return redirect(url_for('config_form'))
           
         else:
@@ -210,7 +267,7 @@ def login():
            print (user.password.encode())
            print (bcrypt.checkpw(entered_password.encode(), user.password.encode())) 
            flash ('invalid username or password','error')
-           print('sucks motherfucker')
+           print('sell')
 
     return render_template('loginPage.html')
 

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #eefaff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #006d77;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            color: white;
+        }
+
+        .header img {
+            height: 80px;
+        }
+
+        .title {
+            color: white;
+            font-size: 28px;
+        }
+
+        .settings-icon {
+            color: white;
+            font-size: 24px;
+            text-decoration: none;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+
+        .json-terminal {
+            background-color: #c3e6cb;
+            color: #650202;
+            font-family: monospace;
+            padding: 20px;
+            border-radius: 10px;
+            width: 45%;
+            max-height: 500px;
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+
+        .internet-status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 20px;
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 10px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #internet-status {
+            transition: all 0.3s ease;
+        }
+
+        /* 🔹 Estilo para os IPs */
+        .ip-status-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+            flex-wrap: wrap;
+        }
+        .ip-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 250px;
+            margin: 10px;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        .ip-card h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #006d77;
+        }
+        .ip {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .status {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .online {
+            color: green;
+        }
+        .offline {
+            color: red;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #0077cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #005fa3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <div class="header">
+        <img src="/static/logo_pd7.png" id="logo" alt="Logo PD7Tech">
+        <h1 class="title">Dashboard</h1>
+        <a href="{{ url_for('config_form') }}" class="settings-icon" title="Configurações">
+            <i class="fas fa-cog"></i>
+        </a>
+    </div>
+
+    <!-- Status da internet -->
+    <div class="internet-status" id="internet-status">Verificando conexão...</div>
+
+    <!-- 🔹 Status dos IPs -->
+    <div class="ip-status-container">
+        <div class="ip-card">
+            <h3>192.168.20.145</h3>
+            <p class="status" id="static-status">Carregando...</p>
+        </div>
+        <div class="ip-card">
+            <h3>192.168.20.145</h3>
+            <p class="status" id="current-status">Carregando...</p>
+        </div>
+    </div>
+
+    <!-- Botão de reescan -->
+    <div style="text-align: center;">
+        <button onclick="rescanIPs()">Reescanear IPs</button>
+    </div>
+
+    <!-- Terminais JSON -->
+    <div class="dashboard-wrapper">
+        <pre class="json-terminal" id="static-json">Carregando...</pre>
+        <pre class="json-terminal" id="current-json">Carregando...</pre>
+    </div>
+
+<script>
+    async function loadJson(url, elementId) {
+        try {
+            const res = await fetch(url + '?t=' + new Date().getTime()); // evitar cache
+            if (!res.ok) {
+                document.getElementById(elementId).textContent = `Network Error`;
+                return;
+            }
+
+            const data = await res.json();
+            let formatted = "";
+
+            if (data.status) {
+                formatted += `Status: ${data.status}\n\n`;
+            }
+
+            if (data.objects && Object.keys(data.objects).length > 0) {
+                for (const [key, obj] of Object.entries(data.objects)) {
+                    let status = obj.presentValue;
+                    if (status === 1) status = "Normal";
+                    else if (status === 2) status = "Fogo";
+                    else if (status === 3) status = "Alarme";
+                    else status = status.toString();
+
+                    formatted += `ID: ${key}\n`;
+                    formatted += `Nome: ${obj.objectName}\n`;
+                    formatted += `Descrição: ${obj.description}\n`;
+                    formatted += `Status: ${status}\n\n`;
+                }
+            } else if (!data.status) {
+                formatted = "Network Error";
+            }
+
+            document.getElementById(elementId).textContent = formatted.trim() || "Network Error";
+        } catch (err) {
+            document.getElementById(elementId).textContent = "Network Error";
+            console.error(`Erro ao carregar ${url}:`, err);
+        }
+    }
+
+    async function checkInternetStatus() {
+        try {
+            const res = await fetch("/ping");
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === "online") {
+                    const el = document.getElementById("internet-status");
+                    el.textContent = "Conectado à Internet";
+                    el.style.backgroundColor = "#d4edda";
+                    el.style.color = "#155724";
+                    el.style.border = "1px solid #c3e6cb";
+                } else {
+                    throw new Error("Offline");
+                }
+            } else {
+                throw new Error("Offline");
+            }
+        } catch {
+            const el = document.getElementById("internet-status");
+            el.textContent = "Sem conexão com a Internet";
+            el.style.backgroundColor = "#f8d7da";
+            el.style.color = "#721c24";
+            el.style.border = "1px solid #f5c6cb";
+        }
+    }
+
+    // 🔹 Carregar IPs e status dos BACnet.json
+    async function carregarIPs() {
+        try {
+            const response = await fetch("/get_ips");
+            const data = await response.json();
+
+            // Static.json
+            document.getElementById("static-ip").innerText = data.static_ip || "192.168.20.145";
+            document.getElementById("static-status").innerText = data.static_status || "offline";
+            document.getElementById("static-status").className =
+                "status " + (data.static_status === "online" ? "online" : "offline");
+
+            // Current.json
+            document.getElementById("current-ip").innerText = data.current_ip || "192.168.20.145";
+            document.getElementById("current-status").innerText = data.current_status || "offline";
+            document.getElementById("current-status").className =
+                "status " + (data.current_status === "online" ? "online" : "offline");
+
+        } catch (err) {
+            console.error("Erro ao carregar IPs:", err);
+        }
+    }
+
+    async function rescanIPs() {
+        const response = await fetch("/rescan", { method: "POST" });
+        const data = await response.json();
+        alert(data.message);
+        setTimeout(carregarIPs, 3000); // dá tempo do backend atualizar
+    }
+
+    function refreshData() {
+        loadJson('/services/static.json', 'static-json');
+        loadJson('/services/current.json', 'current-json');
+    }
+
+    checkInternetStatus();
+    carregarIPs();
+    refreshData();
+    setInterval(refreshData, 3000);
+    setInterval(carregarIPs, 5000);
+</script>
+</body>
+</html>

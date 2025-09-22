@@ -15,10 +15,10 @@ def login_page():
 @app.route('/login', methods=['POST'])
 def login():
     # ... verificação do login ...
-    return redirect(url_for('dashboard'))  # Redireciona para o dashboard
+    return redirect(url_for('dashboard2'))  # Redireciona para o dashboard
 
-@app.route('/dashboard')
+@app.route('/dashboard2')
 def dashboard():
-    return render_template('dashboard.html')  # essa é a página com as bombas animadas
+    return render_template('dashboard2.html')  # essa é a página com as bombas animadas
 
 

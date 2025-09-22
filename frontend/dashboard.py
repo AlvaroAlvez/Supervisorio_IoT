@@ -17,11 +17,11 @@ app = Flask(__name__)
 @app.route('/login', methods=['POST'])
 def login():
     # Aqui vai a lógica de verificação de login...
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('dashboard2'))
 
-@app.route('/dashboard')
+@app.route('/dashboard2')
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('dashboard2.html')
 
 @app.route('/pump_status')
 def pump_status():

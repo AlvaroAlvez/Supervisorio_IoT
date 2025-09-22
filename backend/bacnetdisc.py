@@ -1,29 +1,25 @@
 import BAC0
-import sys
-sys.path.append('/home/babyiotito/scripts/services')
-from RaspResources import resources
-import json
+import time
 
-#Getting IP address
-raspi_resources = resources()
-raspi_Eth0 = raspi_resources.get_eth0_ip()
-
-#connecting to bacnet
-bacnet = BAC0.connect(f"{raspi_Eth0}/24", port=47808)
-print("BACnet instance running:", bacnet)
-
-bacnet.discover(networks='known')
-
-print(bacnet.devices)
-
-#connect to bacnet
-def bacnet_devices():
-    devices = bacnet.whois()
-    device_json = json.dumps(devices)
-    return device_json
+# Inicializa BAC0 na sua interface de rede
+bacnet = BAC0.lite(ip='192.168.20.71', port=47808)
+print(f"BACnet instance running: {bacnet}")
 
 
+time.sleep(2)
 
+# Envia Who-Is para todos os dispositivos (0-4194303)
+print("Enviando Who-Is...")
+devices = bacnet.discover()
+time.sleep(2)
 
+# Mostra dispositivos encontrados
+if devices:
+    print("Dispositivos encontrados:")
+    for device in devices:
+        print(device)
+else:
+    print("Nenhum dispositivo BACnet respondeu.")
 
-    
+# Encerra BAC0
+bacnet.disconnect()
