@@ -20,10 +20,10 @@ POLL_INTERVAL = 10
 STATIC_JSON = "/home/babyiotito/scripts/services/static_NET.json"
 CURRENT_JSON = "/home/babyiotito/scripts/services/current_NET.json"
 
-REDIS_HOST = "iotito.com.br"
-REDIS_PORT = 6379
-REDIS_PASS = "0591aed20b36a22a3d815107f398905b7c137ec90dfaa657ba7a4ea117c555fe"
-REDIS_KEY = "raspi:discovery_alert"
+REDIS_HOST = "xxxxx"
+REDIS_PORT = 0000
+REDIS_PASS = "xxxxx"
+REDIS_KEY = "xxxxx"
 
 # Flask app
 app = Flask(__name__)
