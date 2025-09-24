@@ -3,9 +3,9 @@ import json
 
 # Connect to Redis
 r = redis.Redis(
-    host='iotito.com.br',  # Change to your Redis server if needed
-    port=6379,
-    password='0591aed20b36a22a3d815107f398905b7c137ec90dfaa657ba7a4ea117c555fe',  # Add your password if needed
+    host='xxxx',  # Change to your Redis server if needed
+    port=0000,
+    password='xxxxxx',  # Add your password if needed
     decode_responses=True  # Makes sure Redis returns strings instead of bytes
 )
 
@@ -36,3 +36,4 @@ try:
         print(f"? No data found for key: {key}")
 except Exception as e:
     print(f"? Failed to read data from Redis: {e}")
+
